@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:jee="http://www.springframework.org/schema/jee"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--扫包-->
+    <context:component-scan base-package="com.demo"></context:component-scan>
+
+    <!--注册标签-->
+    <context:annotation-config />
+    <!--开启mvc模式注解-->
+    <mvc:annotation-driven />
+
+    <beans>
+
+        <!--代码控制的事务管理-->
+        <!--数据库-->
+        <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+              destroy-method="close">
+            <property name="driverClassName" value="net.sourceforge.jtds.jdbc.Driver"/>
+            <property name="url" value="jdbc:jtds:sqlserver://127.0.0.1:1433/TDB"/>
+            <property name="username" value="sa"/>
+            <property name="password" value="123456"/>
+        </bean>
+        <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" lazy-init="false">
+            <property name="dataSource" ref="dataSource"/>
+            <property name="mapperLocations" value="classpath*:mapper/*Mapper.xml"/>
+            <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        </bean>
+        <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" scope="prototype">
+            <constructor-arg index="0" ref="sqlSessionFactory"/>
+        </bean>
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="com.demo.dao"/>
+            <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        </bean>
+
+        <!--视图解析-->
+        <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver" >
+            <property name="viewClass" value="org.springframework.web.servlet.view.JstlView">
+            </property>
+            <property name="prefix" value="views/"/>
+            <property name="suffix" value=".jsp"/>
+        </bean>
+
+        <!--
+            将接口声明为Http invoker服务
+            HttpInvokerServiceExporter 实际上是一个spring mvc控制器，它处理客户端的请求并调用服务实现。
+            并且需要映射url
+        -->
+        <!--<bean id="httpService" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">-->
+            <!--<property name="service" ref="ucService" />-->
+            <!--<property name="serviceInterface" value="com.demo.service.UcService" />-->
+        <!--</bean>-->
+        <!--<bean class = "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">-->
+            <!--<property name="mappings">-->
+                <!--<props>-->
+                    <!--&lt;!&ndash;url映射转交给HttpInvokerServiceExporter&ndash;&gt;-->
+                    <!--<prop key="/httpService">httpService</prop>-->
+
+                    <!--&lt;!&ndash;url映射到代理类&ndash;&gt;-->
+                    <!--<prop key="/storeService">storeService</prop>-->
+                    <!--<prop key="/productService">productService</prop>-->
+                <!--</props>-->
+            <!--</property>-->
+        <!--</bean>-->
+
+        <!--
+            注册 服务端的http代理服务
+        -->
+        <bean id="storeService" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+            <!--service 为具体实现类-->
+            <property name="service" ref="storeServiceImpl"></property>
+            <!--serviceInterfae 为service接口-->
+            <property name="serviceInterface" value="com.demo.service.StoreService"/>
+        </bean>
+
+        <bean id="storeServiceImpl" class="com.demo.service.StoreServiceImpl"/>
+        <!--注册service实现类-->
+        <bean id="ucService" class="com.demo.service.UCServiceImpl"></bean>
+
+        <bean id="ProductServiceImpl" class="com.demo.service.ProductServiceImpl"/>
+
+        <!--注册service的http代理-->
+        <bean id="productService" class="org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter">
+            <!-- 实现类 -->
+            <property name="service" ref="ProductServiceImpl"/>
+            <!-- 接口 -->
+            <property name="serviceInterface" value="com.demo.service.ProductService" />
+        </bean>
+
+        <!--<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">-->
+            <!--<property value="${db.driver}" name="driverClassName"/>-->
+            <!--<property value="${db.url}" name="url"/>-->
+            <!--<property value="${db.username}" name="username"/>-->
+            <!--<property value="${db.password}" name="password"/>-->
+            <!--<property name="validationQuery" value="SELECT 1"/>-->
+            <!--<property name="testOnBorrow" value="true"/>-->
+            <!--<property name="testWhileIdle" value="true"/>-->
+            <!--<property name="timeBetweenEvictionRunsMillis" value="600000"/>-->
+        <!--</bean>-->
+
+    </beans>
+
+</beans>

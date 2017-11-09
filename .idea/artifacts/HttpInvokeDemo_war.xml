@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="HttpInvokeDemo:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="HttpInvokeDemo.war">
+      <element id="artifact" artifact-name="HttpInvokeDemo:war exploded" />
+    </root>
+  </artifact>
+</component>
